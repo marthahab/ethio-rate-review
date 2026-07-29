@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: ethio-rate-review-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ethio_admin
+      POSTGRES_PASSWORD: ethio_password
+      POSTGRES_DB: ethio_rate_review
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
