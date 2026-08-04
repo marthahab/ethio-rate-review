@@ -12,5 +12,60 @@ model User {
   email     String   @unique
   name      String
   createdAt DateTime @default(now())
+
+  reviews Review[]
 }
 
+model Business {
+  id            Int      @id @default(autoincrement())
+  name          String
+  description   String?
+  address       String?
+  city          String?
+  latitude      Float?
+  longitude     Float?
+  phone         String?
+  website       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  averageRating Float    @default(0)
+  reviewCount   Int      @default(0)
+
+  reviews       Review[]
+  categories    BusinessCategory[]
+}
+  
+model Review {
+  id         Int      @id @default(autoincrement())
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  userId     Int
+  businessId Int
+
+  user       User     @relation(fields: [userId], references: [id])
+  business   Business @relation(fields: [businessId], references: [id])
+
+  @@unique([userId, businessId])
+}
+
+model Category {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  description String?
+
+  businesses BusinessCategory[]
+}
+
+model BusinessCategory {
+  businessId Int
+  categoryId Int
+
+  business Business @relation(fields: [businessId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@id([businessId, categoryId])
+}
