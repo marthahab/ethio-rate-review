@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { BusinessService } from './business.service';
 import { CreateBusinessDto } from './dto/create-business.dto';
 
@@ -6,13 +14,31 @@ import { CreateBusinessDto } from './dto/create-business.dto';
 export class BusinessController {
   constructor(private readonly businessService: BusinessService) {}
 
-  @Get()
-  findAll() {
-    return this.businessService.findAll();
+ @Get()
+findAll(
+  @Query('search') search?: string,
+  @Query('city') city?: string,
+  @Query('category') category?: string,
+  @Query('page') page = '1',
+ @Query('limit') limit = '10',
+@Query('sort') sort = 'rating',
+) {
+  return this.businessService.findAll(
+    search,
+    city,
+    category,
+    Number(page),
+    Number(limit),
+    sort,
+  );
+}
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.businessService.findOne(id);
   }
 
   @Post()
-  create(@Body() data: CreateBusinessDto) {
-    return this.businessService.create(data);
-  }
+create(@Body() dto: CreateBusinessDto) {
+  return this.businessService.create(dto);
+}
 }

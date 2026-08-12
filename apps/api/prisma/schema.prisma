@@ -6,14 +6,21 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+enum Role {
+  CUSTOMER
+  BUSINESS_OWNER
+  ADMIN
+}
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  createdAt DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+  createdAt    DateTime @default(now())
+  reviews      Review[]
 
-  reviews Review[]
 }
 
 model Business {
@@ -26,6 +33,7 @@ model Business {
   longitude     Float?
   phone         String?
   website       String?
+  googleMapsUrl String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

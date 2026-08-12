@@ -2,9 +2,6 @@ import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateReviewDto {
   @IsInt()
-  userId!: number;
-
-  @IsInt()
   businessId!: number;
 
   @IsInt()
