@@ -1,9 +1,11 @@
 import {
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBusinessDto } from './dto/create-business.dto';
+import { UpdateBusinessDto } from './dto/update-business.dto';
 
 @Injectable()
 export class BusinessService {
@@ -128,7 +130,35 @@ export class BusinessService {
 
     return business;
   }
- async create(dto: CreateBusinessDto) {
+
+  findMine(ownerId: number) {
+    return this.prisma.business.findMany({
+      where: { ownerId },
+      include: {
+        categories: {
+          include: {
+            category: true,
+          },
+        },
+        reviews: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+ async create(dto: CreateBusinessDto, ownerId: number) {
   const {
     name,
     description,
@@ -139,8 +169,36 @@ export class BusinessService {
     phone,
     website,
     googleMapsUrl,
+    imageUrl,
+    category,
     categoryIds,
-  }  = dto;
+  } = dto;
+
+  let categoryCreate;
+
+  if (category) {
+    const categoryRecord = await this.prisma.category.upsert({
+      where: { name: category },
+      update: {},
+      create: { name: category },
+    });
+
+    categoryCreate = [
+      {
+        category: {
+          connect: { id: categoryRecord.id },
+        },
+      },
+    ];
+  } else if (categoryIds?.length) {
+    categoryCreate = categoryIds.map((categoryId: number) => ({
+      category: {
+        connect: {
+          id: categoryId,
+        },
+      },
+    }));
+  }
 
   return this.prisma.business.create({
     data: {
@@ -153,18 +211,21 @@ export class BusinessService {
       phone,
       website,
       googleMapsUrl,
-      categories: categoryIds?.length
+      imageUrl,
+
+      owner: {
+        connect: {
+          id: ownerId,
+        },
+      },
+
+      categories: categoryCreate
         ? {
-            create: categoryIds.map((categoryId: number) => ({
-              category: {
-                connect: {
-                  id: categoryId,
-                },
-              },
-            })),
+            create: categoryCreate,
           }
         : undefined,
     },
+
     include: {
       categories: {
         include: {
@@ -173,5 +234,57 @@ export class BusinessService {
       },
     },
   });
-}
+}  async update(
+    id: number,
+    dto: UpdateBusinessDto,
+    user: { id: number; role: string },
+  ) {
+    const business = await this.prisma.business.findUnique({
+      where: { id },
+    });
+
+    if (!business) {
+      throw new NotFoundException('Business not found');
+    }
+
+    if (business.ownerId !== user.id && user.role !== 'ADMIN') {
+      throw new ForbiddenException('You do not own this business.');
+    }
+
+       const {
+      name,
+      description,
+      address,
+      city,
+      latitude,
+      longitude,
+      phone,
+      website,
+      googleMapsUrl,
+      imageUrl,
+    } = dto;
+
+    return this.prisma.business.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        address,
+        city,
+        latitude,
+        longitude,
+        phone,
+        website,
+        googleMapsUrl,
+        imageUrl,
+      },
+      include: {
+        categories: {
+          include: {
+            category: true,
+          },
+        },
+      },
+    });
+  }
 }

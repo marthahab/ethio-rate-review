@@ -1,14 +1,9 @@
-import {
-  IsString,
-  IsOptional,
-  IsNumber,
-  IsArray,
-  IsInt,
-} from 'class-validator';
+import { IsString, IsOptional, IsNumber } from 'class-validator';
 
-export class CreateBusinessDto {
+export class UpdateBusinessDto {
+  @IsOptional()
   @IsString()
-  name!: string;
+  name?: string;
 
   @IsOptional()
   @IsString()
@@ -38,20 +33,11 @@ export class CreateBusinessDto {
   @IsString()
   website?: string;
 
- @IsOptional()
+  @IsOptional()
   @IsString()
   googleMapsUrl?: string;
 
   @IsOptional()
   @IsString()
   imageUrl?: string;
-  
-@IsOptional()
-  @IsString()
-  category?: string;
-
-  @IsOptional()
-  @IsArray()
-  @IsInt({ each: true })
-  categoryIds?: number[];
 }

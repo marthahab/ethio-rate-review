@@ -1,16 +1,32 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { Prisma } from '@prisma/client';
-
 @Injectable()
 export class ReviewService {
   constructor(private prisma: PrismaService) {}
-
   async create(dto: CreateReviewDto, userId: number) {
+    const business = await this.prisma.business.findUnique({
+      where: { id: dto.businessId },
+    });
+
+    if (!business) {
+      throw new NotFoundException('Business not found');
+    }
+
+    if (business.ownerId === userId) {
+      throw new ForbiddenException(
+        'You cannot review your own business.',
+      );
+    }
+
     let review;
-    try {
-      review = await this.prisma.review.create({
+    try {      review = await this.prisma.review.create({
         data: {
           rating: dto.rating,
           comment: dto.comment,

@@ -6,6 +6,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 enum Role {
   CUSTOMER
   BUSINESS_OWNER
@@ -19,8 +20,9 @@ model User {
   passwordHash String
   role         Role     @default(CUSTOMER)
   createdAt    DateTime @default(now())
-  reviews      Review[]
 
+  reviews      Review[]
+  businesses   Business[]
 }
 
 model Business {
@@ -34,35 +36,39 @@ model Business {
   phone         String?
   website       String?
   googleMapsUrl String?
+  imageUrl      String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  averageRating Float    @default(0)
-  reviewCount   Int      @default(0)
+  averageRating Float @default(0)
+  reviewCount   Int   @default(0)
+
+  ownerId       Int
+  owner         User  @relation(fields: [ownerId], references: [id])
 
   reviews       Review[]
   categories    BusinessCategory[]
 }
-  
+
 model Review {
-  id         Int      @id @default(autoincrement())
-  rating     Int
-  comment    String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   userId     Int
   businessId Int
 
-  user       User     @relation(fields: [userId], references: [id])
-  business   Business @relation(fields: [businessId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+  business Business @relation(fields: [businessId], references: [id])
 
   @@unique([userId, businessId])
 }
 
 model Category {
-  id          Int        @id @default(autoincrement())
-  name        String     @unique
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
   description String?
 
   businesses BusinessCategory[]

@@ -8,6 +8,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +18,8 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
+
+    
     const existing = await this.prisma.user.findUnique({
       where: {
         email: dto.email,
@@ -27,13 +30,19 @@ export class AuthService {
       throw new BadRequestException('Email already exists');
     }
 
-    const passwordHash = await bcrypt.hash(dto.password, 10);
+        const passwordHash = await bcrypt.hash(dto.password, 10);
+
+    // Only allow self-registration as CUSTOMER or BUSINESS_OWNER.
+    // ADMIN accounts must be created separately (e.g. seeded or promoted by an existing admin).
+    const role =
+      dto.role === Role.BUSINESS_OWNER ? Role.BUSINESS_OWNER : Role.CUSTOMER;
 
     return this.prisma.user.create({
       data: {
         name: dto.name,
         email: dto.email,
         passwordHash,
+        role,
       },
       select: {
         id: true,
