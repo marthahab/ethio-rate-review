@@ -50,8 +50,7 @@ type BusinessesResponse = {
   }
 }
 
-const API_URL = 'http://localhost:3001'
-
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 export async function getTopRatedBusinesses(): Promise<Business[]> {
   const response = await fetch(
     `${API_URL}/businesses?sort=rating&limit=12`,
