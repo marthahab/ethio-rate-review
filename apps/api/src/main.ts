@@ -11,8 +11,9 @@ async function bootstrap() {
     : ['http://localhost:3000'];
 
   app.enableCors({
-    origin: allowedOrigins,
-  });
+  origin: 'https://ethio-rate-review.vercel.app',
+  credentials: true,
+});
 
   app.useGlobalPipes(
     new ValidationPipe({
