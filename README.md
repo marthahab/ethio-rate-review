@@ -1,3 +1,5 @@
+https://ethio-rate-review.vercel.app
+
 # EthioRate — Ethiopian Local Business Review & Discovery Platform
 
 EthioRate is a web-based platform for discovering, reviewing, and rating local businesses and services in Ethiopia. The platform is designed to help customers make informed decisions through community-generated reviews while giving business owners an online presence where they can manage their businesses and receive customer feedback.
